@@ -1,0 +1,6 @@
+En esta actividad, crearás una aplicación web para la gestión de productos, en la cual los usuarios autenticados podrán agregar, 
+modificar, ver y eliminar productos. La aplicación incluirá un sistema CRUD para los productos y gestionará el registro, inicio y 
+cierre de sesión de usuarios, usando JWT para proteger rutas específicas. Para el desarrollo, se emplearán Node.js, Express.js, 
+MongoDB, y Jest para pruebas unitarias. Además, el proyecto se desplegará mediante herramientas como GitHub Actions y una plataforma 
+SaaS (por ejemplo, Vercel) con el objetivo de brindar una experiencia práctica en el desarrollo y despliegue seguro de aplicaciones web.
+
