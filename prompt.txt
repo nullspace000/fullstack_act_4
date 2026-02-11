@@ -1,6 +1,52 @@
+Descripción:
 En esta actividad, crearás una aplicación web para la gestión de productos, en la cual los usuarios autenticados podrán agregar, 
 modificar, ver y eliminar productos. La aplicación incluirá un sistema CRUD para los productos y gestionará el registro, inicio y 
 cierre de sesión de usuarios, usando JWT para proteger rutas específicas. Para el desarrollo, se emplearán Node.js, Express.js, 
-MongoDB, y Jest para pruebas unitarias. Además, el proyecto se desplegará mediante herramientas como GitHub Actions y una plataforma 
+MySql, y Jest para pruebas unitarias. Además, el proyecto se desplegará mediante herramientas como GitHub Actions y una plataforma 
 SaaS (por ejemplo, Vercel) con el objetivo de brindar una experiencia práctica en el desarrollo y despliegue seguro de aplicaciones web.
 
+Objetivo:
+Desarrollar una aplicación web de Node JS utilizando las herramientas mencionadas en la descripción para gestionar productos en una base 
+de datos a través de las operaciones CRUD e implementar un sistema de autenticación y autorización.
+
+Será un market place muy sensillo en donde:
+#####################################################################################
+Los usuarios podrán crear ###########################################################
+
+Instrucciones:
+Documentación del proyecto.
+
+Crea un documento donde se describan los requerimientos funcionales y no funcionales de la aplicación.
+
+Configuración del servidor.
+
+Desarrolla una aplicación en Node.js, usando el framework de Express.js e implementando los middlewares necesarios para la autenticación mediante 
+JWT y para la conexión a MongoDB como base de datos.
+
+Generación de rutas.
+
+Implementa middlewares para gestionar las rutas de los recursos de la aplicación, asegurando el acceso adecuado a las operaciones de cada recurso.
+
+Implementación de autenticación y autorización.
+
+Implementa el flujo de autenticación mediante JWT y protege las rutas de productos, incluyendo la creación de una vista estática con HTML para el login de la aplicación.
+
+Generación de controladores.
+
+Desarrolla controladores que gestionarán la interacción con la base de datos de MongoDB para cada recurso, utilizando la librería Mongoose para las consultas.
+
+Generación de pruebas unitarias.
+
+Configura la librería Jest para crear pruebas unitarias automatizadas que verifiquen el funcionamiento de los controladores y rutas.
+Utiliza una herramienta de IA, como Copilot, para generar automáticamente pruebas para los controladores y rutas basadas en el código existente.
+Ajusta manualmente las pruebas generadas por la IA para asegurar que cubran los casos específicos y cumplan con los requeridos del proyecto.
+
+Despliegue.
+
+Despliega la aplicación en una plataforma SaaS como Vercel (u otra similar) que permita alojar el servidor y operaciones de Node.js.
+Configura un pipeline de CI/CD mediante GitHub Actions que permita automatizar el despliegue de la aplicación.
+
+Documentación del proyecto que incluya.
+
+Adjunta en un documento Word, los requerimientos funcionales y no funcionales. Además, incluye el diagrama de entidad-relación y una justificación sobre la elección de la plataforma SaaS para el despliegue de la aplicación.
+Adjunta el enlace del repositorio que contenga todos los archivos del proyecto, incluyendo el código fuente, el archivo de configuración del pipeline de CI/CD y las instrucciones para ejecutar la aplicación.
