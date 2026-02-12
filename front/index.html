@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Portafolio</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <h1>Tienda de Productos</h1>
+            <ul>
+                <li><a href="#inicio">Inicio</a></li>
+                <li><a href="#proyectos">Productos</a></li>
+                <li><a href="#contacto">Contacto</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="inicio" class="hero">
+            <h2>Bienvenido</h2>
+            <p>Todos pueden ver los productos. Si tienes las credenciales correctas, puedes crear, actualizar y eliminar productos.</p>
+        </section>
+
+        <section id="proyectos" class="projects">
+            <h2>Productos</h2>
+            
+            <button class="btn btn-primario" id="btnAgregarItem">
+                Agregar producto a la lista
+            </button>
+            <br><br>
+
+            <ul id="product_list">
+                <li class="product_card">
+                    <h3 class="product_name">
+                        Producto 1
+                    </h3>
+                    <h4 class="product_price">
+                        $400
+                    </h4>
+                    <p class="product_description">
+                        Esta es la descripción con las especificaciones del producto.
+                    </p>
+                </li>
+            </ul>
+            <div class="project-grid">
+                <div class="project-card">
+                    <h3>Proyecto 1</h3>
+                    <p>Descripción del proyecto</p>
+                </div>
+                <div class="project-card">
+                    <h3>Proyecto 2</h3>
+                    <p>Descripción del proyecto</p>
+                </div>
+                <div class="project-card">
+                    <h3>Proyecto 3</h3>
+                    <p>Descripción del proyecto</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="contacto" class="contact">
+            <h2>Contacto</h2>
+            <form>
+                <input type="text" placeholder="Nombre" required>
+                <input type="email" placeholder="Email" required>
+                <textarea placeholder="Mensaje" required></textarea>
+                <button type="submit">Enviar</button>
+            </form>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Mi Portafolio</p>
+    </footer>
+</body>
+</html>

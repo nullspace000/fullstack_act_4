@@ -9,9 +9,7 @@ Objetivo:
 Desarrollar una aplicación web de Node JS utilizando las herramientas mencionadas en la descripción para gestionar productos en una base 
 de datos a través de las operaciones CRUD e implementar un sistema de autenticación y autorización.
 
-Será un market place muy sensillo en donde:
-#####################################################################################
-Los usuarios podrán crear ###########################################################
+Será una página simple para mostrar productos en venta.
 
 Instrucciones:
 Documentación del proyecto.
