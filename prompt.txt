@@ -9,7 +9,7 @@ Objetivo:
 Desarrollar una aplicación web de Node JS utilizando las herramientas mencionadas en la descripción para gestionar productos en una base 
 de datos a través de las operaciones CRUD e implementar un sistema de autenticación y autorización.
 
-Será una página simple para mostrar productos en venta.
+Será una página simple para mostrar productos en venta. La estructura de la base de datos está en schema.sql. Todos los usuarios podrán ver los productos. Pero solo el usario administrador podrá agregar nuevos productos, actualizar el contenido de los productos y eliminar productos con los botones en cada elemento li.
 
 Instrucciones:
 Documentación del proyecto.
