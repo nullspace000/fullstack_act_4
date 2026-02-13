@@ -1,16 +1,19 @@
 {
   "name": "actividad_4",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Tienda de productos con autenticación JWT",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "jest --coverage --detectOpenHandles --forceExit",
+    "test:watch": "jest --watch"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nullspace000/fullstack_act_4.git"
   },
-  "keywords": [],
+  "keywords": ["nodejs", "express", "jwt", "sqlite"],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
@@ -30,5 +33,16 @@
   "devDependencies": {
     "jest": "^30.2.0",
     "supertest": "^7.2.2"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coverageDirectory": "coverage",
+    "collectCoverageFrom": [
+      "server.js",
+      "!**/node_modules/**"
+    ],
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ]
   }
 }
