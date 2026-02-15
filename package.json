@@ -13,7 +13,12 @@
     "type": "git",
     "url": "git+https://github.com/nullspace000/fullstack_act_4.git"
   },
-  "keywords": ["nodejs", "express", "jwt", "sqlite"],
+  "keywords": [
+    "nodejs",
+    "express",
+    "jwt",
+    "sqlite"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
@@ -23,11 +28,11 @@
   "homepage": "https://github.com/nullspace000/fullstack_act_4#readme",
   "dependencies": {
     "bcryptjs": "^3.0.3",
-    "better-sqlite3": "^12.6.2",
     "cors": "^2.8.6",
     "dotenv": "^17.2.4",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
+    "mongodb": "^7.1.0",
     "mysql2": "^3.17.0"
   },
   "devDependencies": {
