@@ -21,8 +21,8 @@ async function connectDB() {
     return db;
 }
 
-// Initialize DB connection
-connectDB().catch(console.error);
+// Initialize DB connection and export ready promise
+const dbReady = connectDB().catch(console.error);
 
 app.use(cors());
 app.use(express.json());
@@ -232,4 +232,5 @@ process.on('SIGINT', async () => {
     process.exit(0);
 });
 
-module.exports = app;
+// Export both app and dbReady promise for tests
+module.exports = { app, dbReady };

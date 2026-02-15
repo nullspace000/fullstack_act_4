@@ -1,15 +1,23 @@
 {
   "version": 2,
-  "buildCommand": "npm install",
-  "outputDirectory": "front",
+  "builds": [
+    {
+      "src": "api/index.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "front/**",
+      "use": "@vercel/static"
+    }
+  ],
   "routes": [
     {
       "src": "/api/(.*)",
       "dest": "/api/index.js"
     },
     {
-      "src": "/.*",
-      "dest": "/front/index.html"
+      "src": "/(.*)",
+      "dest": "/front/$1"
     }
   ],
   "env": {
