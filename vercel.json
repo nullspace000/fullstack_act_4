@@ -13,7 +13,7 @@
     }
   ],
   "env": {
-    "JWT_SECRET": "@jwt_secret",
-    "MONGODB_URI": "@mongodb_uri"
+    "JWT_SECRET": "x2xRBnGXuI5v1l",
+    "MONGODB_URI": "mongodb+srv://diegocouto217:rlvi2iOItVwTH1@cluster0.yml35wa.mongodb.net/?appName=Cluster0"
   }
 }

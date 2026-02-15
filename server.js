@@ -1,13 +1,12 @@
 require('dotenv').config();
 const express = require('express');
-const Database = require('better-sqlite3');
 const cors = require('cors');
-const path = require('path');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { MongoClient, ObjectId } = require('mongodb');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
@@ -17,8 +16,21 @@ app.use(express.static('front'));
 // JWT Secret from environment
 const JWT_SECRET = process.env.JWT_SECRET || 'tu_secreto_jwt_seguro_aqui_2024';
 
-// Connect to SQLite database
-const db = new Database('db/products.db');
+let db;
+let client;
+
+// Connect to MongoDB
+async function connectDB() {
+    const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
+    client = new MongoClient(uri);
+    await client.connect();
+    db = client.db();
+    console.log('Connected to MongoDB');
+    return db;
+}
+
+// Initialize DB connection
+connectDB().catch(console.error);
 
 // Auth Middleware
 const authenticateToken = (req, res, next) => {
@@ -56,8 +68,7 @@ app.post('/api/login', async (req, res) => {
     }
 
     try {
-        const stmt = db.prepare('SELECT * FROM users WHERE username = ?');
-        const user = stmt.get(username);
+        const user = await db.collection('users').findOne({ username });
 
         if (!user) {
             return res.status(401).json({ error: 'Credenciales inválidas' });
@@ -74,7 +85,7 @@ app.post('/api/login', async (req, res) => {
         }
 
         const token = jwt.sign(
-            { id: user.id, username: user.username },
+            { id: user._id, username: user.username },
             JWT_SECRET,
             { expiresIn: '1h' }
         );
@@ -82,7 +93,7 @@ app.post('/api/login', async (req, res) => {
         res.json({
             message: 'Login exitoso',
             token,
-            user: { id: user.id, username: user.username }
+            user: { id: user._id.toString(), username: user.username }
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -103,8 +114,7 @@ app.post('/api/register', async (req, res) => {
 
     try {
         // Check if user exists
-        const checkStmt = db.prepare('SELECT * FROM users WHERE username = ?');
-        const existingUser = checkStmt.get(username);
+        const existingUser = await db.collection('users').findOne({ username });
         
         if (existingUser) {
             return res.status(400).json({ error: 'El usuario ya existe' });
@@ -115,12 +125,14 @@ app.post('/api/register', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, salt);
 
         // Insert user
-        const insertStmt = db.prepare('INSERT INTO users (username, password) VALUES (?, ?)');
-        const result = insertStmt.run(username, hashedPassword);
+        const result = await db.collection('users').insertOne({
+            username,
+            password: hashedPassword
+        });
 
         res.status(201).json({
             message: 'Usuario creado exitosamente',
-            user: { id: result.lastInsertRowid, username }
+            user: { id: result.insertedId.toString(), username }
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -128,17 +140,24 @@ app.post('/api/register', async (req, res) => {
 });
 
 // GET - Obtener todos los productos (público)
-app.get('/api/products', (req, res) => {
+app.get('/api/products', async (req, res) => {
     try {
-        const products = db.prepare('SELECT * FROM products ORDER BY id').all();
-        res.json(products);
+        const products = await db.collection('products').find({}).toArray();
+        // Convert _id to id for frontend compatibility
+        const productsWithId = products.map(p => ({
+            id: p._id.toString(),
+            name: p.name,
+            price: p.price,
+            description: p.description
+        }));
+        res.json(productsWithId);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
 // POST - Crear nuevo producto (solo admin)
-app.post('/api/products', authenticateToken, isAdmin, (req, res) => {
+app.post('/api/products', authenticateToken, isAdmin, async (req, res) => {
     const { name, price, description } = req.body;
     
     if (!name || !price || !description) {
@@ -146,11 +165,14 @@ app.post('/api/products', authenticateToken, isAdmin, (req, res) => {
     }
 
     try {
-        const stmt = db.prepare('INSERT INTO products (name, price, description) VALUES (?, ?, ?)');
-        const result = stmt.run(name, parseFloat(price), description);
+        const result = await db.collection('products').insertOne({
+            name,
+            price: parseFloat(price),
+            description
+        });
         
         const newProduct = {
-            id: result.lastInsertRowid,
+            id: result.insertedId.toString(),
             name,
             price: parseFloat(price),
             description
@@ -163,7 +185,7 @@ app.post('/api/products', authenticateToken, isAdmin, (req, res) => {
 });
 
 // PUT - Actualizar producto (solo admin)
-app.put('/api/products/:id', authenticateToken, isAdmin, (req, res) => {
+app.put('/api/products/:id', authenticateToken, isAdmin, async (req, res) => {
     const { id } = req.params;
     const { name, price, description } = req.body;
 
@@ -172,28 +194,37 @@ app.put('/api/products/:id', authenticateToken, isAdmin, (req, res) => {
     }
 
     try {
-        const stmt = db.prepare('UPDATE products SET name = ?, price = ?, description = ? WHERE id = ?');
-        const result = stmt.run(name, parseFloat(price), description, id);
+        const objectId = new ObjectId(id);
+        const result = await db.collection('products').findOneAndUpdate(
+            { _id: objectId },
+            { $set: { name, price: parseFloat(price), description } },
+            { returnDocument: 'after' }
+        );
 
-        if (result.changes === 0) {
+        if (!result) {
             return res.status(404).json({ error: 'Producto no encontrado' });
         }
 
-        res.json({ id: parseInt(id), name, price: parseFloat(price), description });
+        res.json({ 
+            id: result._id.toString(), 
+            name, 
+            price: parseFloat(price), 
+            description 
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
 // DELETE - Eliminar producto (solo admin)
-app.delete('/api/products/:id', authenticateToken, isAdmin, (req, res) => {
+app.delete('/api/products/:id', authenticateToken, isAdmin, async (req, res) => {
     const { id } = req.params;
 
     try {
-        const stmt = db.prepare('DELETE FROM products WHERE id = ?');
-        const result = stmt.run(id);
+        const objectId = new ObjectId(id);
+        const result = await db.collection('products').deleteOne({ _id: objectId });
 
-        if (result.changes === 0) {
+        if (result.deletedCount === 0) {
             return res.status(404).json({ error: 'Producto no encontrado' });
         }
 
@@ -201,6 +232,14 @@ app.delete('/api/products/:id', authenticateToken, isAdmin, (req, res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
+});
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+    if (client) {
+        await client.close();
+    }
+    process.exit(0);
 });
 
 // Start server

@@ -1,0 +1,2 @@
+- Network Access: Add 0.0.0.0/0 (allows all IPs) or specifically add Vercel's IPs
+- Fix github push issue

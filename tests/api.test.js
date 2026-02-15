@@ -155,7 +155,7 @@ describe('API Auth', () => {
         it('should return token for valid credentials', async () => {
             const response = await request('http://localhost:3000')
                 .post('/api/login')
-                .send({ username: 'admin', password: 'admin1234' });
+                .send({ username: 'admin', password: 'admin123' });
             
             expect(response.status).toBe(200);
             expect(response.body).toHaveProperty('token');

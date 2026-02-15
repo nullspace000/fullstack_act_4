@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
+    "seed": "node seed.js",
     "test": "jest --coverage --detectOpenHandles --forceExit",
     "test:watch": "jest --watch"
   },
@@ -17,7 +18,7 @@
     "nodejs",
     "express",
     "jwt",
-    "sqlite"
+    "mongodb"
   ],
   "author": "",
   "license": "ISC",
@@ -32,8 +33,7 @@
     "dotenv": "^17.2.4",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
-    "mongodb": "^7.1.0",
-    "mysql2": "^3.17.0"
+    "mongodb": "^7.1.0"
   },
   "devDependencies": {
     "jest": "^30.2.0",

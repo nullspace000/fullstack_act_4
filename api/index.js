@@ -3,14 +3,26 @@ const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const path = require('path');
-
-// Setup SQLite
-const Database = require('better-sqlite3');
-const db = new Database(path.join(process.cwd(), 'db/products.db'));
+const { MongoClient, ObjectId } = require('mongodb');
 
 const app = express();
 const JWT_SECRET = process.env.JWT_SECRET || 'tu_secreto_jwt_seguro_aqui_2024';
+
+let db;
+let client;
+
+// Connect to MongoDB
+async function connectDB() {
+    const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
+    client = new MongoClient(uri);
+    await client.connect();
+    db = client.db();
+    console.log('Connected to MongoDB');
+    return db;
+}
+
+// Initialize DB connection
+connectDB().catch(console.error);
 
 app.use(cors());
 app.use(express.json());
@@ -51,8 +63,7 @@ app.post('/api/login', async (req, res) => {
     }
 
     try {
-        const stmt = db.prepare('SELECT * FROM users WHERE username = ?');
-        const user = stmt.get(username);
+        const user = await db.collection('users').findOne({ username });
 
         if (!user) {
             return res.status(401).json({ error: 'Credenciales inválidas' });
@@ -60,13 +71,13 @@ app.post('/api/login', async (req, res) => {
 
         const validPassword = await bcrypt.compare(password, user.password);
         const validPlainPassword = password === user.password;
-        
+
         if (!validPassword && !validPlainPassword) {
             return res.status(401).json({ error: 'Credenciales inválidas' });
         }
 
         const token = jwt.sign(
-            { id: user.id, username: user.username },
+            { id: user._id, username: user.username },
             JWT_SECRET,
             { expiresIn: '1h' }
         );
@@ -74,7 +85,7 @@ app.post('/api/login', async (req, res) => {
         res.json({
             message: 'Login exitoso',
             token,
-            user: { id: user.id, username: user.username }
+            user: { id: user._id, username: user.username }
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -94,9 +105,8 @@ app.post('/api/register', async (req, res) => {
     }
 
     try {
-        const checkStmt = db.prepare('SELECT * FROM users WHERE username = ?');
-        const existingUser = checkStmt.get(username);
-        
+        const existingUser = await db.collection('users').findOne({ username });
+
         if (existingUser) {
             return res.status(400).json({ error: 'El usuario ya existe' });
         }
@@ -104,12 +114,14 @@ app.post('/api/register', async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        const insertStmt = db.prepare('INSERT INTO users (username, password) VALUES (?, ?)');
-        const result = insertStmt.run(username, hashedPassword);
+        const result = await db.collection('users').insertOne({
+            username,
+            password: hashedPassword
+        });
 
         res.status(201).json({
             message: 'Usuario creado exitosamente',
-            user: { id: result.lastInsertRowid, username }
+            user: { id: result.insertedId, username }
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -117,29 +129,39 @@ app.post('/api/register', async (req, res) => {
 });
 
 // Get all products
-app.get('/api/products', (req, res) => {
+app.get('/api/products', async (req, res) => {
     try {
-        const products = db.prepare('SELECT * FROM products ORDER BY id').all();
-        res.json(products);
+        const products = await db.collection('products').find({}).toArray();
+        // Convert _id to id for frontend compatibility
+        const productsWithId = products.map(p => ({
+            id: p._id.toString(),
+            name: p.name,
+            price: p.price,
+            description: p.description
+        }));
+        res.json(productsWithId);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
 // Create product (admin only)
-app.post('/api/products', authenticateToken, isAdmin, (req, res) => {
+app.post('/api/products', authenticateToken, isAdmin, async (req, res) => {
     const { name, price, description } = req.body;
-    
+
     if (!name || !price || !description) {
         return res.status(400).json({ error: 'Todos los campos son requeridos' });
     }
 
     try {
-        const stmt = db.prepare('INSERT INTO products (name, price, description) VALUES (?, ?, ?)');
-        const result = stmt.run(name, parseFloat(price), description);
-        
+        const result = await db.collection('products').insertOne({
+            name,
+            price: parseFloat(price),
+            description
+        });
+
         res.status(201).json({
-            id: result.lastInsertRowid,
+            id: result.insertedId.toString(),
             name,
             price: parseFloat(price),
             description
@@ -150,7 +172,7 @@ app.post('/api/products', authenticateToken, isAdmin, (req, res) => {
 });
 
 // Update product (admin only)
-app.put('/api/products/:id', authenticateToken, isAdmin, (req, res) => {
+app.put('/api/products/:id', authenticateToken, isAdmin, async (req, res) => {
     const { id } = req.params;
     const { name, price, description } = req.body;
 
@@ -159,28 +181,37 @@ app.put('/api/products/:id', authenticateToken, isAdmin, (req, res) => {
     }
 
     try {
-        const stmt = db.prepare('UPDATE products SET name = ?, price = ?, description = ? WHERE id = ?');
-        const result = stmt.run(name, parseFloat(price), description, id);
+        const objectId = new ObjectId(id);
+        const result = await db.collection('products').findOneAndUpdate(
+            { _id: objectId },
+            { $set: { name, price: parseFloat(price), description } },
+            { returnDocument: 'after' }
+        );
 
-        if (result.changes === 0) {
+        if (!result) {
             return res.status(404).json({ error: 'Producto no encontrado' });
         }
 
-        res.json({ id: parseInt(id), name, price: parseFloat(price), description });
+        res.json({
+            id: result._id.toString(),
+            name: result.name,
+            price: result.price,
+            description: result.description
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
 // Delete product (admin only)
-app.delete('/api/products/:id', authenticateToken, isAdmin, (req, res) => {
+app.delete('/api/products/:id', authenticateToken, isAdmin, async (req, res) => {
     const { id } = req.params;
 
     try {
-        const stmt = db.prepare('DELETE FROM products WHERE id = ?');
-        const result = stmt.run(id);
+        const objectId = new ObjectId(id);
+        const result = await db.collection('products').deleteOne({ _id: objectId });
 
-        if (result.changes === 0) {
+        if (result.deletedCount === 0) {
             return res.status(404).json({ error: 'Producto no encontrado' });
         }
 
@@ -192,5 +223,13 @@ app.delete('/api/products/:id', authenticateToken, isAdmin, (req, res) => {
 
 // Serve static files
 app.use(express.static('front'));
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+    if (client) {
+        await client.close();
+    }
+    process.exit(0);
+});
 
 module.exports = app;
